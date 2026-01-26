@@ -41,9 +41,11 @@ Training dataset:
 Utilizing alpaca-cleaned containng 52,000 instructions, found here https://huggingface.co/datasets/yahma/alpaca-cleaned (credits to original authors)
 
 Results:
-finetune model answered 305/834 instructions correctly, compared to the base model of 200/834.  
+finetune model answered 305/834 instructions correctly, compared to the base model of 200/834. Official 3.1 8b instruct model gets 670/834.  Assuming no major errors in the setup, this is a big improvement with just $10 of compute.
 
-![results](lora vs base ifeval.png)
+![results](results.png)
+
+
 
 
 ## Setup
