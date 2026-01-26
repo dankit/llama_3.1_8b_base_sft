@@ -3,14 +3,16 @@
 Objective: supervised finetuning on the base llama 3.1 8b model, specifically using the alpaca instruction dataset to see how much of an improvement we can get on instruction following. I am not so much trying to make it conversational/multi-turn as much as simple instruction following.
 
 llama 3.1 8b base vs llama 3.1 8b instruct in the IFEval and tinyMMLU.
-MMLU (16bf):
+
+<b>MMLU (16bf)</b>:
+
 -Base scored 64.2% on 0-shot tinyMMLU
 -Instruct scored 62.9% on 0-shot tinyMMLU
 -base model had a slightly higher tinyMMLU compared to instruct variant, this may be because it's testing general knowledge, and base has the highest "raw knowledge"
   -0-shot = knowledge, 5-shot = in-context ability?
 -calculated score using log prob scoring (logits for a/b/c/d and highest probability)
 
-IFEval (16bf, 8bit, 4bit):
+<b>IFEval (16bf, 8bit, 4bit)</b>:
 -tested quantizing, and specifically used unsloth's dynamic quantization for 4bit, 8bit, observing minimal loss in IFEval accuracy.
 -observed 8bit inference was much slower than bf16 and 4bit with unsloth, I then compared this to normal huggingface + bitsandbytes and had similar outcomes.
   -this is my second time observing this, the both times using Ampere. I'm guessing newer cards use FP8 so no one cares about int8 and its not optimized?
@@ -28,7 +30,7 @@ random notes:
 -pin memory: it page locks memory so that ram cant be swapped out to disk making it a stable physical address to access for high speed data transfers between cpu and gpu (direct memory access)
 
 
-Training:
+<b>Training:</b>
 The goal is to experiment with LoRA, in which I calculated it would take me atleast 100GB in an unoptimized training setup to run training for 1 example with seq len of 2048.
 Most of this memory comes from the optimizer states when using Adamw which takes up ~60gb, and gradients which take up ~15gb. With Lora, the same training example should comfortably
 fit on 1xA100 (40gb) as base models have requires_grad=False meaning no stored gradients/optimizers. LoRA adapter is added ontop of the frozen base weights. W_new = W_frozen + W_lora = W_frozen + BA, where A and B are low rank matrices.
@@ -37,6 +39,11 @@ backpropagation still happens, as we still need to compute the error. During bac
 
 Training dataset:
 Utilizing alpaca-cleaned containng 52,000 instructions, found here https://huggingface.co/datasets/yahma/alpaca-cleaned (credits to original authors)
+
+Results:
+finetune model answered 305/834 instructions correctly, compared to the base model of 200/834.  
+
+![results](lora vs base ifeval.png)
 
 
 ## Setup
