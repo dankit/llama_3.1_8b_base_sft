@@ -1,0 +1,6 @@
+/unsloth_compiled_cache
+*.pkl
+*.pyc
+*.zip
+outputs/
+lora_model_bf16/

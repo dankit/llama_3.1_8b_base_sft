@@ -1,0 +1,46 @@
+{
+  "metadata": {
+    "model_name": "unsloth/Llama-3.1-8B-Instruct",
+    "lora_path": null,
+    "precision": "bf16",
+    "run_name": "unsloth_Llama-3.1-8B-Instruct",
+    "timestamp": "20260124_162806",
+    "tasks": [
+      "ifeval"
+    ],
+    "eval_gpu_memory_gb": 27.087653636932373
+  },
+  "config": {
+    "max_seq_length": 2048,
+    "batch_size": 64,
+    "generation_config": {
+      "max_new_tokens": 1024,
+      "do_sample": false
+    },
+    "chat_template": "llama-3.1",
+    "num_samples": 541
+  },
+  "timing": {
+    "generation_seconds": 247.14546060562134,
+    "scoring_seconds": 0.46871495246887207,
+    "total_seconds": 247.6141755580902
+  },
+  "results": {
+    "ifeval": {
+      "inst_level_strict_acc": 0.4856115107913669,
+      "inst_level_loose_acc": 0.4856115107913669,
+      "prompt_level_strict_acc": 0.3456561922365989,
+      "prompt_level_loose_acc": 0.3456561922365989
+    }
+  },
+  "metrics_flat": {
+    "ifeval/inst_level_strict_acc": 0.4856115107913669,
+    "ifeval/inst_level_loose_acc": 0.4856115107913669,
+    "ifeval/prompt_level_strict_acc": 0.3456561922365989,
+    "ifeval/prompt_level_loose_acc": 0.3456561922365989,
+    "timing/generation_seconds": 247.14546060562134,
+    "timing/scoring_seconds": 0.46871495246887207,
+    "timing/total_seconds": 247.6141755580902,
+    "eval/gpu_memory_gb": 27.087653636932373
+  }
+}
