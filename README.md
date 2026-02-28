@@ -7,33 +7,45 @@ llama 3.1 8b base vs llama 3.1 8b instruct in the IFEval and tinyMMLU.
 <b>MMLU (16bf)</b>:
 
 -Base scored 64.2% on 0-shot tinyMMLU
+
 -Instruct scored 62.9% on 0-shot tinyMMLU
+
 -base model had a slightly higher tinyMMLU compared to instruct variant, this may be because it's testing general knowledge, and base has the highest "raw knowledge"
+
   -0-shot = knowledge, 5-shot = in-context ability?
+  
 -calculated score using log prob scoring (logits for a/b/c/d and highest probability)
 
 <b>IFEval (16bf, 8bit, 4bit)</b>:
+
 -tested quantizing, and specifically used unsloth's dynamic quantization for 4bit, 8bit, observing minimal loss in IFEval accuracy.
--observed 8bit inference was much slower than bf16 and 4bit with unsloth, I then compared this to normal huggingface + bitsandbytes and had similar outcomes.
-  -this is my second time observing this, the both times using Ampere. I'm guessing newer cards use FP8 so no one cares about int8 and its not optimized?
-  -I might have been suboptimal with my batch sizes on some runs, but unsloth was definitely faster than the base huggingface lib.
+
+-observed 8bit inference was much slower than bf16 and 4bit with unsloth, I then compared this to normal huggingface + bitsandbytes and had similar outcomes. This is my second time observing this, the both times using Ampere. I'm guessing newer cards use FP8 so no one cares about int8 OR its not optimized on older cards/architectures?
+  
+-I might have been suboptimal with my batch sizes on some runs, but unsloth was definitely faster than the base huggingface lib.
+  
 -Had issues with unsloth loader for bf16 llama 3.1 8b instruct evals which had worse performance than the quantized 8bit version, moved to huggingface loader which fixed it.
 
 
 random notes:
+
 -Was using vllm early on but consolidated everything into unsloth for simplicity for this small scale project
--Had to take evals out from eval generation loop, as the machine i was training on was CPU bottlenecked while doing so.
-  -moved eval scoring (cpu bound work), off gpu machine and onto personal computer to maximize throughput
+
+-Had to take evals out from eval generation loop, as the machine i was training on was CPU bottlenecked while doing so. Moved eval scoring (cpu bound work), off gpu machine and onto personal computer to maximize throughput
+
 -SFT'd models such as chat/instruct models have chat templates typically.
   -"add_generation_prompt" in the chat template adds the "turn" token so that model/assistant knows its their turn
+  
 -usually use left side padding for inference (all tokens to the right are "true" tokens), even if its typically right side during training
+
 -pin memory: it page locks memory so that ram cant be swapped out to disk making it a stable physical address to access for high speed data transfers between cpu and gpu (direct memory access)
 
 
 <b>Training:</b>
+
 The goal is to experiment with LoRA, in which I calculated it would take me atleast 100GB in an unoptimized training setup to run training for 1 example with seq len of 2048.
-Most of this memory comes from the optimizer states when using Adamw which takes up ~60gb, and gradients which take up ~15gb. With Lora, the same training example should comfortably
-fit on 1xA100 (40gb) as base models have requires_grad=False meaning no stored gradients/optimizers. LoRA adapter is added ontop of the frozen base weights. W_new = W_frozen + W_lora = W_frozen + BA, where A and B are low rank matrices.
+
+Most of this memory comes from the optimizer states when using Adamw which takes up ~60gb, and gradients which take up ~15gb. With Lora, the same training example should comfortably fit on 1xA100 (40gb) as base models have requires_grad=False meaning no stored gradients/optimizers. LoRA adapter is added ontop of the frozen base weights. W_new = W_frozen + W_lora = W_frozen + BA, where A and B are low rank matrices.
 
 backpropagation still happens, as we still need to compute the error. During backward, it calculates the error per layer depending on their activations. It's only if the parameter is trainable, that this calculated error gets stored, in which we see gradient memory take up space. Activations are also stored before backward pass which is where the other bottleneck starts to show itself. Activations are released once the layers gradient is computed (i think)
 
